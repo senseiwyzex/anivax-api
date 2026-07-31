@@ -2,12 +2,9 @@
   "name": "anivax-api",
   "version": "1.0.0",
   "type": "module",
-  "main": "api/index.js",
-  "scripts": {
-    "build": "echo 'Building...'"
-  },
   "dependencies": {
     "express": "^4.19.2",
-    "anime-sdk": "git+https://github.com/hexxt-git/anime-sdk.git"
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12"
   }
 }
