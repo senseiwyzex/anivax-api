@@ -1,3 +1,6 @@
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -7,11 +10,21 @@ export default async function handler(req, res) {
   if (!episodeId) return res.status(400).json({ error: '?episodeId= parametresi eksik.' });
 
   try {
-    const response = await fetch(`https://api.consumet.org/anime/gogoanime/watch/${encodeURIComponent(episodeId)}`);
-    if (!response.ok) throw new Error(`HTTP Hata: ${response.status}`);
-    const data = await response.json();
-    return res.status(200).json(data);
+    const { data } = await axios.get(`https://gogoanime3.co/${episodeId}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+    });
+    const $ = cheerio.load(data);
+    let iframeUrl = $('iframe').attr('src');
+
+    if (iframeUrl && iframeUrl.startsWith('//')) {
+      iframeUrl = 'https:' + iframeUrl;
+    }
+
+    return res.status(200).json({
+      episodeId,
+      embedUrl: iframeUrl, // <iframe src="..."> içinde doğrudan çalışacak izleme linki
+    });
   } catch (err) {
-    return res.status(500).json({ error: 'İzleme servisine ulaşılamadı.', details: err.message });
+    return res.status(500).json({ error: 'Video linki çekilemedi.', details: err.message });
   }
 }
