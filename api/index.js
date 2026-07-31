@@ -2,10 +2,7 @@ import express from 'express';
 import { ANIME } from '@consumet/extensions';
 
 const app = express();
-
-// SDK Sağlayıcıları
 const gogoanime = new ANIME.Gogoanime();
-const zoro = new ANIME.Zoro();
 
 // CORS Ayarları
 app.use((req, res, next) => {
@@ -28,15 +25,9 @@ app.get('/api/search', async (req, res) => {
 
   try {
     const results = await gogoanime.search(query);
-    return res.json(results);
+    res.json(results);
   } catch (err) {
-    try {
-      // Gogoanime patlarsa Zoro SDK'sı devreye girer
-      const zoroResults = await zoro.search(query);
-      return res.json(zoroResults);
-    } catch (zErr) {
-      return res.status(500).json({ error: 'Arama hatası.', details: err.message });
-    }
+    res.status(500).json({ error: 'Arama hatası.', details: err.message });
   }
 });
 
@@ -47,14 +38,9 @@ app.get('/api/info', async (req, res) => {
 
   try {
     const info = await gogoanime.fetchAnimeInfo(id);
-    return res.json(info);
+    res.json(info);
   } catch (err) {
-    try {
-      const zoroInfo = await zoro.fetchAnimeInfo(id);
-      return res.json(zoroInfo);
-    } catch (zErr) {
-      return res.status(500).json({ error: 'Detay hatası.', details: err.message });
-    }
+    res.status(500).json({ error: 'Detay hatası.', details: err.message });
   }
 });
 
@@ -65,14 +51,9 @@ app.get('/api/watch', async (req, res) => {
 
   try {
     const sources = await gogoanime.fetchEpisodeSources(episodeId);
-    return res.json(sources);
+    res.json(sources);
   } catch (err) {
-    try {
-      const zoroSources = await zoro.fetchEpisodeSources(episodeId);
-      return res.json(zoroSources);
-    } catch (zErr) {
-      return res.status(500).json({ error: 'Video kaynağı hatası.', details: err.message });
-    }
+    res.status(500).json({ error: 'Video kaynağı hatası.', details: err.message });
   }
 });
 
