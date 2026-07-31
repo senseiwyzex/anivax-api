@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "main": "api/index.js",
+  "scripts": {
+    "build": "echo 'Building...'"
+  },
   "dependencies": {
     "express": "^4.19.2",
-    "anime-sdk": "github:senseiwyzex/anime-sdk"
+    "anime-sdk": "git+https://github.com/hexxt-git/anime-sdk.git"
   }
 }
