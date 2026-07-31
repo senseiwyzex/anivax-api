@@ -5,7 +5,6 @@
   "main": "api/index.js",
   "dependencies": {
     "express": "^4.19.2",
-    "axios": "^1.7.2",
-    "cheerio": "^1.0.0-rc.12"
+    "@consumet/extensions": "^1.5.3"
   }
 }
