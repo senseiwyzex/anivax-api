@@ -1,6 +1,8 @@
 import express from 'express';
+import { Gogoanime } from '../lib/sdk.js';
 
 const app = express();
+const gogoanime = new Gogoanime();
 
 // CORS Ayarları
 app.use((req, res, next) => {
@@ -11,77 +13,47 @@ app.use((req, res, next) => {
   next();
 });
 
-// Dynamic Import ile SDK yükleme (Cold-start çökmesini önler)
-async function getSDK() {
-  const sdk = await import('anime-sdk');
-  return sdk;
-}
-
-// Ana Sayfa / Health Check
+// Sağlık Kontrolü (Ana Sayfa)
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Anivax Anime SDK API Yayında!' });
+  res.json({ status: 'ok', message: 'Anivax API Yerel SDK ile Yayında!' });
 });
 
-// 1. ANİME ARAMA: /api/search?q=naruto
+// 1. Arama Endpoint'i: /api/search?q=naruto
 app.get('/api/search', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.status(400).json({ error: '?q= parametresi eksik.' });
 
   try {
-    const sdk = await getSDK();
-    // Dokümantasyondaki Provider kullanımı (Gogoanime / HiAnime)
-    const provider = new (sdk.ANIME?.Gogoanime || sdk.Gogoanime)();
-    const results = await provider.search(query);
-    return res.json(results);
+    const results = await gogoanime.search(query);
+    res.json(results);
   } catch (err) {
-    try {
-      // Yedek Sağlayıcı Denemesi
-      const sdk = await getSDK();
-      const backupProvider = new (sdk.ANIME?.HiAnime || sdk.HiAnime)();
-      const results = await backupProvider.search(query);
-      return res.json(results);
-    } catch (backupErr) {
-      return res.status(500).json({ 
-        error: 'Arama yapılırken hata oluştu.', 
-        details: err.message 
-      });
-    }
+    res.status(500).json({ error: 'Arama sırasında bir hata oluştu.', details: err.message });
   }
 });
 
-// 2. ANİME DETAY & BÖLÜM LİSTESİ: /api/info?id=naruto
+// 2. Detay Endpoint'i: /api/info?id=naruto
 app.get('/api/info', async (req, res) => {
   const id = req.query.id;
   if (!id) return res.status(400).json({ error: '?id= parametresi eksik.' });
 
   try {
-    const sdk = await getSDK();
-    const provider = new (sdk.ANIME?.Gogoanime || sdk.Gogoanime)();
-    const info = await provider.fetchAnimeInfo(id);
-    return res.json(info);
+    const info = await gogoanime.fetchAnimeInfo(id);
+    res.json(info);
   } catch (err) {
-    return res.status(500).json({ 
-      error: 'Detaylar alınırken hata oluştu.', 
-      details: err.message 
-    });
+    res.status(500).json({ error: 'Detay çekilirken hata oluştu.', details: err.message });
   }
 });
 
-// 3. BÖLÜM VİDEO LİNKLERİ: /api/watch?episodeId=naruto-episode-1
+// 3. İzleme Linki Endpoint'i: /api/watch?episodeId=naruto-episode-1
 app.get('/api/watch', async (req, res) => {
   const episodeId = req.query.episodeId;
   if (!episodeId) return res.status(400).json({ error: '?episodeId= parametresi eksik.' });
 
   try {
-    const sdk = await getSDK();
-    const provider = new (sdk.ANIME?.Gogoanime || sdk.Gogoanime)();
-    const sources = await provider.fetchEpisodeSources(episodeId);
-    return res.json(sources);
+    const sources = await gogoanime.fetchEpisodeSources(episodeId);
+    res.json(sources);
   } catch (err) {
-    return res.status(500).json({ 
-      error: 'Video kaynakları alınamadı.', 
-      details: err.message 
-    });
+    res.status(500).json({ error: 'Kaynak çekilirken hata oluştu.', details: err.message });
   }
 });
 
